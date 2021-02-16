@@ -4,13 +4,36 @@ const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
 
+//A function that will generate a random string of 6 random alphanumeric characters
+const generateRandomString = function(length) {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
 //Our version of a DB
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
 };
 
+//npm module responsible for decrypting the buffer sent in the body of the request
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// ----------------- ROUTES (DOWN)-----------------//
+
 //List of potential routes that the server listens to:
+app.post("/urls", (req, res) => {
+  console.log(req.body); // Log the POST request body to the console
+  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+});
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -30,6 +53,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: shortURL, longURL: longURL };
   res.render("urls_show.ejs", templateVars);
 });
+
+// ------------------ ROUTES (UP)------------------//
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
