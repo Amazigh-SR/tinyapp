@@ -22,9 +22,12 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// app.get("/urls/:shortURL", (req, res) => {
-//   const templateVars = { shortURL: urlDatabase[shortURL] };
-// });
+app.get("/urls/:shortURL", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  const templateVars = { shortURL: shortURL, longURL: longURL };
+  res.render("urls_show.ejs", templateVars);
+});
 
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
