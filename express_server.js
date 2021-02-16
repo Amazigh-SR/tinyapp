@@ -60,6 +60,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   const templateVars = { shortURL: shortURL, longURL: longURL };
+
+  if (!longURL) {
+    return res.status(404).send("Sorry, this resource is not available");
+  }
   res.render("urls_show.ejs", templateVars);
 });
 
