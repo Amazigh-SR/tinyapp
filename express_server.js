@@ -20,7 +20,21 @@ const generateRandomString = function(length) {
   return result;
 };
 
-//Our version of a DB
+//Our version of a users DB
+const users = {
+  n2xsO1: {
+    id: "n2xsO",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur",
+  },
+  "8oL2xP": {
+    id: "oL2xP",
+    email: "user2@example.com",
+    password: "dishwasher-funk",
+  },
+};
+
+//Our version of a shortURL DB
 const urlDatabase = {
   b2xVn2: "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com",
@@ -39,6 +53,14 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = longURL;
 
   res.redirect(`/urls/${shortURL}`);
+});
+
+app.post("/register", (req, res) => {
+  const { email, password } = req.body;
+  const user = generateRandomString(6);
+  users[user] = { email, password, id: user };
+  res.cookie("userID", user);
+  res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
