@@ -66,6 +66,10 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/register", (req, res) => {
+  res.render("urls_registration.ejs");
+});
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
