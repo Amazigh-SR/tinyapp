@@ -8,7 +8,13 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <form style="position: absolute; right: 350px" action="/login" method="POST"> 
+          <label for="login" style="color: white;"> Enter Username:</label>
+          <input type="text" id="login" name="username" placeholder="e.g Saïd">
+          <button  type="submit" class="btn btn-primary">Sign In</button>
+        </form>
       </div>
     </div>
   </nav>
 </header>
+
