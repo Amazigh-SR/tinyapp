@@ -72,11 +72,6 @@ const users = {
 };
 
 //Our version of a shortURL DB
-// const urlDatabase = {
-//   b2xVn2: "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com",
-// };
-
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
   i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
@@ -201,16 +196,23 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
   const userID = users[req.cookies["userID"]];
+  const shortURL = req.params.shortURL;
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(403).redirect("/login");
+  }
+  if (!userID) {
+    return res.status(403).redirect("/login");
+  }
+
+  const longURL = urlDatabase[shortURL].longURL;
   const templateVars = {
     shortURL,
     longURL,
     userID,
   };
 
-  if (!longURL) {
+  if (!shortURL) {
     return res.status(404).send("Sorry, this resource is not available");
   }
   res.render("urls_show.ejs", templateVars);
