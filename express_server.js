@@ -139,11 +139,15 @@ app.post("/login", (req, res) => {
 
 // ----------------- GET ROUTES (BELOW)-----------------//
 app.get("/login", (req, res) => {
-  res.render("urls_login.ejs");
+  const userID = users[req.cookies["userID"]];
+  const templateVars = { userID };
+  res.render("urls_login.ejs", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  res.render("urls_registration.ejs");
+  const userID = users[req.cookies["userID"]];
+  const templateVars = { userID };
+  res.render("urls_registration.ejs", templateVars);
 });
 
 app.get("/", (req, res) => {
