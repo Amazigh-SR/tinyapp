@@ -8,7 +8,9 @@ const {
   getUserByEmail,
   urlsForUser,
 } = require("./helpers");
-const PORT = 8080; // default port 8080
+const PORT = 8080;
+
+// ------------------- Middlewares (BELOW)-------------------//
 
 //Setting the default view engine to ejs
 app.set("view engine", "ejs");
@@ -82,6 +84,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(403).redirect("/login");
   }
+  //else delete shortURL property then redirect to homepage
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
@@ -99,6 +102,7 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
+  //Clear the cookie
   req.session.userID = null;
   res.redirect("/urls");
 });
@@ -108,11 +112,10 @@ app.post("/login", (req, res) => {
 
   //If email is not present in the users DB then 403.
   if (!getUserByEmail(email, users)) {
-    return res.status(403).send("Sorry, this email is not valid"); //Could add a redirect to the register page here
+    return res.status(403).send("Sorry, this email is not valid");
   }
 
   //If email exists then verify that both the email and password are from the same user
-
   const userID = getUserByEmail(email, users);
   if (bcrypt.compareSync(password, users[userID].password)) {
     req.session.userID = userID;
@@ -138,7 +141,6 @@ app.get("/register", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const userID = users[req.session.userID];
-
   if (!userID) {
     return res.redirect("/login");
   }
@@ -154,7 +156,7 @@ app.get("/urls", (req, res) => {
   if (!userID) {
     return res.status(403).redirect("/login");
   }
-
+  //else give access to the page
   const personalLinks = urlsForUser(urlDatabase, userID);
   const templateVars = {
     urls: personalLinks,
@@ -172,20 +174,20 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = users[req.session.userID];
   const shortURL = req.params.shortURL;
+  //Added restrictions to deal with users not loggedin that are trying to view a link not theirs
   if (!userID) {
     return res.status(403).redirect("/login");
   }
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(403).redirect("/login");
   }
-
   const longURL = urlDatabase[shortURL].longURL;
   const templateVars = {
     shortURL,
     longURL,
     userID,
   };
-
+  //If a loggedin user is asking for a resource that does not exist
   if (!shortURL) {
     return res.status(404).send("Sorry, this resource is not available");
   }
