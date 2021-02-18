@@ -35,6 +35,16 @@ const verifyDB = function(valueType, value, db) {
   return false;
 };
 
+//A function that works exactly like verifyDB but instead returns the associated userID
+const returnUserID = function(valueType, value, db) {
+  for (const userID in db) {
+    if (db[userID][valueType] === value) {
+      return userID;
+    }
+  }
+  return false;
+};
+
 // -------------------- DataBases (BELOW)--------------------//
 //Our version of a users DB
 const users = {
@@ -101,15 +111,30 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("userID");
   res.redirect("/urls");
 });
 
-//Need to consider the edge case where username is submited without a value
 app.post("/login", (req, res) => {
-  // const userName = req.body.username;
-  // res.cookie("username", userName);
-  res.redirect("/urls");
+  const { email, password } = req.body;
+
+  //If email is not present in the users DB then 403.
+  if (!verifyDB("email", email, users)) {
+    return res.status(403).send("Sorry, this email is not valid"); //Could add a redirect to the register page here
+  }
+
+  //If email exists then verify that both the email and password are from the same user
+  if (
+    returnUserID("email", email, users) ===
+    returnUserID("password", password, users)
+  ) {
+    const userID = returnUserID("email", email, users);
+    res.cookie("userID", userID);
+    res.redirect("/urls");
+    //else return wrong password
+  } else {
+    return res.status(403).send("Sorry, this password is not valid");
+  }
 });
 
 // ----------------- GET ROUTES (BELOW)-----------------//
