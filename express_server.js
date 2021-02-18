@@ -61,9 +61,14 @@ const users = {
 };
 
 //Our version of a shortURL DB
+// const urlDatabase = {
+//   b2xVn2: "http://www.lighthouselabs.ca",
+//   "9sm5xK": "http://www.google.com",
+// };
+
 const urlDatabase = {
-  b2xVn2: "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com",
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" },
 };
 
 // -------------------- ROUTES (BELOW)--------------------//
@@ -71,9 +76,11 @@ const urlDatabase = {
 
 // ----------------- POST ROUTES (BELOW)-----------------//
 app.post("/urls", (req, res) => {
+  const userID = users[req.cookies["userID"]];
   const longURL = req.body.longURL;
   const shortURL = generateRandomString(6);
-  urlDatabase[shortURL] = longURL;
+
+  urlDatabase[shortURL] = { longURL: longURL, userID: userID };
 
   res.redirect(`/urls/${shortURL}`);
 });
@@ -106,7 +113,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = newLongURL;
+  urlDatabase[shortURL].longURL = newLongURL;
   res.redirect("/urls");
 });
 
@@ -173,13 +180,13 @@ app.get("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[shortURL].longURL;
   const userID = users[req.cookies["userID"]];
   const templateVars = {
     shortURL,
