@@ -29,21 +29,10 @@ const generateRandomString = function(length) {
   return result;
 };
 
-//A function that will check if an id/email/password already exists in the database
-//ValueType --> Email, pw or userID; value --> Actual value;
-const verifyDB = function(valueType, value, db) {
+//A function that will return a userID associated to an email
+const getUserByEmail = function(value, db) {
   for (const userID in db) {
-    if (db[userID][valueType] === value) {
-      return true;
-    }
-  }
-  return false;
-};
-
-//A function that works exactly like verifyDB but instead returns the associated userID
-const returnUserID = function(valueType, value, db) {
-  for (const userID in db) {
-    if (db[userID][valueType] === value) {
+    if (db[userID]["email"] === value) {
       return userID;
     }
   }
@@ -103,7 +92,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send("Invalid email address or password");
   }
   //If email already exsists, notify the user
-  if (verifyDB("email", email, users)) {
+  if (getUserByEmail(email, users)) {
     return res.status(400).send("Email already exists");
   }
 
@@ -146,13 +135,13 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
   //If email is not present in the users DB then 403.
-  if (!verifyDB("email", email, users)) {
+  if (!getUserByEmail(email, users)) {
     return res.status(403).send("Sorry, this email is not valid"); //Could add a redirect to the register page here
   }
 
   //If email exists then verify that both the email and password are from the same user
 
-  const userID = returnUserID("email", email, users);
+  const userID = getUserByEmail(email, users);
   if (bcrypt.compareSync(password, users[userID].password)) {
     req.session.userID = userID;
     res.redirect("/urls");
@@ -211,10 +200,10 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const userID = users[req.session.userID];
   const shortURL = req.params.shortURL;
-  if (userID !== urlDatabase[shortURL].userID) {
+  if (!userID) {
     return res.status(403).redirect("/login");
   }
-  if (!userID) {
+  if (userID !== urlDatabase[shortURL].userID) {
     return res.status(403).redirect("/login");
   }
 
