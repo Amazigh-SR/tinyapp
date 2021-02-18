@@ -45,6 +45,17 @@ const returnUserID = function(valueType, value, db) {
   return false;
 };
 
+//A function that returns all the URLs associated to a given userID
+const urlsForUser = function(dbObj, userID) {
+  const obj = {};
+  for (const url in dbObj) {
+    if (userID === dbObj[url].userID) {
+      obj[url] = dbObj[url].longURL;
+    }
+  }
+  return obj;
+};
+
 // -------------------- DataBases (BELOW)--------------------//
 //Our version of a users DB
 const users = {
@@ -79,7 +90,6 @@ app.post("/urls", (req, res) => {
   const userID = users[req.cookies["userID"]];
   const longURL = req.body.longURL;
   const shortURL = generateRandomString(6);
-
   urlDatabase[shortURL] = { longURL: longURL, userID: userID };
 
   res.redirect(`/urls/${shortURL}`);
@@ -171,8 +181,14 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = users[req.cookies["userID"]];
+  //If the user is not logged in or registered then redirected to the login page
+  if (!userID) {
+    return res.status(403).redirect("/login");
+  }
+
+  const personalLinks = urlsForUser(urlDatabase, userID);
   const templateVars = {
-    urls: urlDatabase,
+    urls: personalLinks,
     userID,
   };
   res.render("urls_index", templateVars);
