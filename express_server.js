@@ -110,13 +110,23 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = users[req.cookies["userID"]];
   const shortURL = req.params.shortURL;
+  //If the owner of this shortURL is not logged in then adios to the login page
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(403).redirect("/login");
+  }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
+  const userID = users[req.cookies["userID"]];
   const shortURL = req.params.shortURL;
+  //If the owner of this shortURL is not logged in then adios to the login page
+  if (userID !== urlDatabase[shortURL].userID) {
+    return res.status(403).redirect("/login");
+  }
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL].longURL = newLongURL;
   res.redirect("/urls");
@@ -176,7 +186,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = users[req.cookies["userID"]];
-  //If the user is not logged in or registered then redirected to the login page
+  //If the user is not logged in or registered then redirect to the login page
   if (!userID) {
     return res.status(403).redirect("/login");
   }
