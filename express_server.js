@@ -150,16 +150,15 @@ app.get("/register", (req, res) => {
   res.render("urls_registration.ejs", templateVars);
 });
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
 app.get("/urls/new", (req, res) => {
   const userID = users[req.cookies["userID"]];
 
+  if (!userID) {
+    return res.redirect("/login");
+  }
   const templateVars = {
     userID,
-  }; // <-- Added cookie variable here
+  };
   res.render("urls_new", templateVars);
 });
 
@@ -168,7 +167,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
     userID,
-  }; // <-- Added cookie variable here
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -186,7 +185,6 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL,
     longURL,
     userID,
-    // <-- Added cookie variable here
   };
 
   if (!longURL) {
