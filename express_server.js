@@ -69,9 +69,8 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  console.log(req.body);
   const { email, password } = req.body;
-  console.log(email, password);
+
   //If the email or password fields are empty, notify the user
   if (!email || !password) {
     return res.status(400).send("Invalid email address or password");
@@ -114,6 +113,10 @@ app.post("/login", (req, res) => {
 });
 
 // ----------------- GET ROUTES (BELOW)-----------------//
+app.get("/login", (req, res) => {
+  res.render("urls_login.ejs");
+});
+
 app.get("/register", (req, res) => {
   res.render("urls_registration.ejs");
 });
@@ -137,7 +140,6 @@ app.get("/urls", (req, res) => {
     urls: urlDatabase,
     userID,
   }; // <-- Added cookie variable here
-  console.log(req.cookies);
   res.render("urls_index", templateVars);
 });
 
