@@ -139,6 +139,15 @@ app.get("/register", (req, res) => {
   res.render("urls_registration.ejs", templateVars);
 });
 
+app.get("/", (req, res) => {
+  const userID = users[req.session.userID];
+  if (userID) {
+    return res.status(302).redirect("/urls");
+  } else {
+    return res.status(302).redirect("/login");
+  }
+});
+
 app.get("/urls/new", (req, res) => {
   const userID = users[req.session.userID];
   if (!userID) {
@@ -167,6 +176,10 @@ app.get("/urls", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+  //if shortURL does not exsist then
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Sorry, this resource is not available");
+  } //else redirect to longURL
   const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
@@ -178,6 +191,10 @@ app.get("/urls/:shortURL", (req, res) => {
   if (!userID) {
     return res.status(403).redirect("/login");
   }
+  //If a loggedin user is asking for a resource that does not exist
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("Sorry, this resource is not available");
+  }
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(403).redirect("/login");
   }
@@ -187,10 +204,7 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL,
     userID,
   };
-  //If a loggedin user is asking for a resource that does not exist
-  if (!shortURL) {
-    return res.status(404).send("Sorry, this resource is not available");
-  }
+
   res.render("urls_show.ejs", templateVars);
 });
 
