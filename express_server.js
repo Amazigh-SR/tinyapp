@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require("bcrypt");
 const PORT = 8080; // default port 8080
 
 //Setting the default view engine to ejs
@@ -104,7 +105,7 @@ app.post("/register", (req, res) => {
 
   //otherwise push the new user to the DB and set a cookie
   const user = generateRandomString(6);
-  users[user] = { email, password, id: user };
+  users[user] = { email, password: bcrypt.hashSync(password, 10), id: user };
   res.cookie("userID", user);
   res.redirect("/urls");
 });
@@ -146,11 +147,9 @@ app.post("/login", (req, res) => {
   }
 
   //If email exists then verify that both the email and password are from the same user
-  if (
-    returnUserID("email", email, users) ===
-    returnUserID("password", password, users)
-  ) {
-    const userID = returnUserID("email", email, users);
+
+  const userID = returnUserID("email", email, users);
+  if (bcrypt.compareSync(password, users[userID].password)) {
     res.cookie("userID", userID);
     res.redirect("/urls");
     //else return wrong password
