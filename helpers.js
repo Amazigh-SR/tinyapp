@@ -18,7 +18,7 @@ const getUserByEmail = function(value, db) {
       return userID;
     }
   }
-  return false;
+  return undefined;
 };
 
 //A function that returns all the URLs associated to a given userID
