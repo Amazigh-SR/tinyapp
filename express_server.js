@@ -1,17 +1,21 @@
 const express = require("express");
 const app = express();
-const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
+const cookieSession = require("cookie-session");
 const PORT = 8080; // default port 8080
 
 //Setting the default view engine to ejs
 app.set("view engine", "ejs");
 //npm module responsible for decrypting the buffer sent in the body of the request
 app.use(bodyParser.urlencoded({ extended: true }));
-//middleware cookieParser - similar to bodyParser but for cookies
-app.use(cookieParser());
-
+//middleware cookieSession - For setting & manipulating envrypted cookies
+app.use(
+  cookieSession({
+    name: "session",
+    keys: ["key1", "key2"],
+  })
+);
 // ------------------ Helper Functions (BELOW)------------------//
 //A function that will generate a random string of 6 random alphanumeric characters
 const generateRandomString = function(length) {
@@ -83,7 +87,7 @@ const urlDatabase = {
 
 // ----------------- POST ROUTES (BELOW)-----------------//
 app.post("/urls", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const longURL = req.body.longURL;
   const shortURL = generateRandomString(6);
   urlDatabase[shortURL] = { longURL: longURL, userID: userID };
@@ -106,12 +110,12 @@ app.post("/register", (req, res) => {
   //otherwise push the new user to the DB and set a cookie
   const user = generateRandomString(6);
   users[user] = { email, password: bcrypt.hashSync(password, 10), id: user };
-  res.cookie("userID", user);
+  req.session.userID = user;
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const shortURL = req.params.shortURL;
   //If the owner of this shortURL is not logged in then adios to the login page
   if (userID !== urlDatabase[shortURL].userID) {
@@ -122,7 +126,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const shortURL = req.params.shortURL;
   //If the owner of this shortURL is not logged in then adios to the login page
   if (userID !== urlDatabase[shortURL].userID) {
@@ -134,7 +138,7 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("userID");
+  req.session.userID = null;
   res.redirect("/urls");
 });
 
@@ -150,7 +154,7 @@ app.post("/login", (req, res) => {
 
   const userID = returnUserID("email", email, users);
   if (bcrypt.compareSync(password, users[userID].password)) {
-    res.cookie("userID", userID);
+    req.session.userID = userID;
     res.redirect("/urls");
     //else return wrong password
   } else {
@@ -160,19 +164,19 @@ app.post("/login", (req, res) => {
 
 // ----------------- GET ROUTES (BELOW)-----------------//
 app.get("/login", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const templateVars = { userID };
   res.render("urls_login.ejs", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const templateVars = { userID };
   res.render("urls_registration.ejs", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
 
   if (!userID) {
     return res.redirect("/login");
@@ -184,7 +188,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   //If the user is not logged in or registered then redirect to the login page
   if (!userID) {
     return res.status(403).redirect("/login");
@@ -205,7 +209,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const userID = users[req.cookies["userID"]];
+  const userID = users[req.session.userID];
   const shortURL = req.params.shortURL;
   if (userID !== urlDatabase[shortURL].userID) {
     return res.status(403).redirect("/login");
