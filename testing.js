@@ -15,3 +15,14 @@ const urlsForUser = function(dbObj, userID) {
 };
 
 console.log(urlsForUser(urlDatabase, "aJ48lW"));
+
+//A function that works exactly like verifyDB but instead returns the associated userID
+//It is also flexblie as it can search any key for e.g.ValueType --> Email, pw or userID; value --> Actual value;
+const returnUserID = function(valueType, value, db) {
+  for (const userID in db) {
+    if (db[userID][valueType] === value) {
+      return userID;
+    }
+  }
+  return false;
+};
